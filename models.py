@@ -1,4 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import relationship
+from sqlalchemy import func
 
 db = SQLAlchemy()
 
@@ -10,6 +12,15 @@ class Book(db.Model):
     genre = db.Column(db.String(50))
     year_published = db.Column(db.Integer)
     summary = db.Column(db.Text)
+
+    reviews = relationship("Review", backref="book", cascade="all, delete-orphan")
+
+    @property
+    def average_rating(self):
+        """Returns the average rating of the book based on reviews."""
+        if self.reviews:
+            return round(sum(review.rating for review in self.reviews) / len(self.reviews), 2)
+        return None
 
 class Review(db.Model):
     __tablename__ = 'reviews'

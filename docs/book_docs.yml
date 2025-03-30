@@ -1,0 +1,263 @@
+swagger: '2.0'
+info:
+  title: 'Books API'
+  description: 'A RESTful API for managing books and reviews.'
+  version: '1.0.0'
+  termsOfService: 'https://example.com/terms'
+  contact:
+    name: 'API Support'
+    email: 'support@example.com'
+
+host: '127.0.0.1:5000'
+basePath: '/api/v1'
+schemes:
+  - 'http'
+
+paths:
+  /books:
+    post:
+      summary: 'Add a new book'
+      description: 'Creates a new book entry.'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'body'
+          name: 'book'
+          required: true
+          schema:
+            $ref: '#/definitions/Book'
+      responses:
+        201:
+          description: 'Book created successfully'
+          schema:
+            type: 'object'
+            properties:
+              message:
+                type: 'string'
+              id:
+                type: 'integer'
+
+    get:
+      summary: 'Retrieve all books'
+      description: 'Returns a list of all books.'
+      produces:
+        - 'application/json'
+      responses:
+        200:
+          description: 'List of books'
+          schema:
+            type: 'array'
+            items:
+              $ref: '#/definitions/Book'
+
+  /books/{id}:
+    get:
+      summary: 'Retrieve a specific book'
+      description: 'Fetch a book by its ID.'
+      produces:
+        - 'application/json'
+      parameters:
+        - name: 'id'
+          in: 'path'
+          required: true
+          type: 'integer'
+      responses:
+        200:
+          description: 'Book details'
+          schema:
+            $ref: '#/definitions/Book'
+        404:
+          description: 'Book not found'
+
+    put:
+      summary: 'Update a book'
+      description: 'Modify the details of an existing book.'
+      consumes:
+        - 'application/json'
+      parameters:
+        - name: 'id'
+          in: 'path'
+          required: true
+          type: 'integer'
+        - in: 'body'
+          name: 'book'
+          required: true
+          schema:
+            $ref: '#/definitions/Book'
+      responses:
+        200:
+          description: 'Book updated successfully'
+        404:
+          description: 'Book not found'
+
+    delete:
+      summary: 'Delete a book'
+      description: 'Removes a book from the collection.'
+      parameters:
+        - name: 'id'
+          in: 'path'
+          required: true
+          type: 'integer'
+      responses:
+        200:
+          description: 'Book deleted successfully'
+        404:
+          description: 'Book not found'
+
+  /books/{id}/reviews:
+    post:
+      summary: 'Add a review'
+      description: 'Submit a review for a book.'
+      consumes:
+        - 'application/json'
+      parameters:
+        - name: 'id'
+          in: 'path'
+          required: true
+          type: 'integer'
+        - in: 'body'
+          name: 'review'
+          required: true
+          schema:
+            $ref: '#/definitions/Review'
+      responses:
+        201:
+          description: 'Review added successfully'
+
+    get:
+      summary: 'Retrieve reviews for a book'
+      description: 'Fetch all reviews for a specific book.'
+      produces:
+        - 'application/json'
+      parameters:
+        - name: 'id'
+          in: 'path'
+          required: true
+          type: 'integer'
+      responses:
+        200:
+          description: 'List of reviews'
+          schema:
+            type: 'array'
+            items:
+              $ref: '#/definitions/Review'
+
+  /books/{id}/summary:
+    get:
+      summary: 'Get book summary & rating'
+      description: 'Fetch the summary and aggregated rating of a book.'
+      produces:
+        - 'application/json'
+      parameters:
+        - name: 'id'
+          in: 'path'
+          required: true
+          type: 'integer'
+      responses:
+        200:
+          description: 'Book summary and average rating'
+          schema:
+            type: 'object'
+            properties:
+              title:
+                type: 'string'
+              summary:
+                type: 'string'
+              average_rating:
+                type: 'number'
+                format: 'float'
+
+  /recommendations:
+    get:
+      summary: 'Get book recommendations'
+      description: 'Suggest books based on user preferences.'
+      produces:
+        - 'application/json'
+      parameters:
+        - name: 'genre'
+          in: 'query'
+          type: 'string'
+      responses:
+        200:
+          description: 'List of recommended books'
+          schema:
+            type: 'array'
+            items:
+              $ref: '#/definitions/Book'
+
+  /generate-summary:
+    post:
+      summary: 'Generate book summary'
+      description: 'Generate a summary for given book content.'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'body'
+          name: 'content'
+          required: true
+          schema:
+            type: 'object'
+            properties:
+              content:
+                type: 'string'
+      responses:
+        200:
+          description: 'Generated summary'
+          schema:
+            type: 'object'
+            properties:
+              summary:
+                type: 'string'
+
+definitions:
+  Book:
+    type: 'object'
+    properties:
+      id:
+        type: 'integer'
+      title:
+        type: 'string'
+        example: 'The Alchemist'
+      author:
+        type: 'string'
+        example: 'Paulo Coelho'
+      genre:
+        type: 'string'
+        example: 'Fiction'
+      year_published:
+        type: 'integer'
+      summary:
+        type: 'string'
+
+  Review:
+    type: 'object'
+    properties:
+      id:
+        type: 'integer'
+      book_id:
+        type: 'integer'
+      user_id:
+        type: 'integer'
+      review_text:
+        type: 'string'
+        example: 'Great book!'
+      rating:
+        type: 'integer'
+        minimum: 1
+        maximum: 5
+
+responses:
+  NotFound:
+    description: 'Resource not found'
+  ValidationError:
+    description: 'Invalid request parameters'
+
+tags:
+  - name: 'Books'
+    description: 'Operations related to books'
+  - name: 'Reviews'
+    description: 'Operations related to reviews'

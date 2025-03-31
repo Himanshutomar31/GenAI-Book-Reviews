@@ -3,10 +3,10 @@ info:
   title: 'Books API'
   description: 'A RESTful API for managing books and reviews.'
   version: '1.0.0'
-  termsOfService: 'https://example.com/terms'
+  termsOfService: ''
   contact:
     name: 'API Support'
-    email: 'support@example.com'
+    email: ''
 
 host: '127.0.0.1:5000'
 basePath: '/api/v1'
@@ -17,17 +17,38 @@ paths:
   /books:
     post:
       summary: 'Add a new book'
-      description: 'Creates a new book entry.'
+      description: 'Creates a new book entry with an optional PDF file.'
       consumes:
         - 'application/json'
+        - 'multipart/form-data'
       produces:
         - 'application/json'
       parameters:
-        - in: 'body'
-          name: 'book'
+        - in: 'formData'
+          name: 'title'
+          type: 'string'
           required: true
-          schema:
-            $ref: '#/definitions/Book'
+          description: 'Title of the book'
+        - in: 'formData'
+          name: 'author'
+          type: 'string'
+          required: true
+          description: 'Author of the book'
+        - in: 'formData'
+          name: 'genre'
+          type: 'string'
+          required: false
+          description: 'Genre of the book'
+        - in: 'formData'
+          name: 'year_published'
+          type: 'integer'
+          required: false
+          description: 'Year the book was published'
+        - in: 'formData'
+          name: 'file'
+          type: 'file'
+          required: false
+          description: 'PDF file containing the book'
       responses:
         201:
           description: 'Book created successfully'
@@ -38,7 +59,11 @@ paths:
                 type: 'string'
               id:
                 type: 'integer'
-
+              pdf_s3_url:
+                type: 'string'
+                description: 'S3 URL of the uploaded PDF (if provided)'
+              summary:
+                type: 'string'
     get:
       summary: 'Retrieve all books'
       description: 'Returns a list of all books.'
@@ -113,10 +138,11 @@ paths:
       consumes:
         - 'application/json'
       parameters:
-        - name: 'id'
-          in: 'path'
-          required: true
+        - in: 'path'
+          name: 'id'
           type: 'integer'
+          required: true
+          description: 'ID of the book to review'
         - in: 'body'
           name: 'review'
           required: true
@@ -187,23 +213,26 @@ paths:
             items:
               $ref: '#/definitions/Book'
 
-  /generate-summary:
+  /books/generate-summary:
     post:
       summary: 'Generate book summary'
-      description: 'Generate a summary for given book content.'
+      description: 'Generate a summary for a given book content or upload a PDF file.'
       consumes:
+        - 'multipart/form-data'
         - 'application/json'
       produces:
         - 'application/json'
       parameters:
-        - in: 'body'
+        - in: 'formData'
+          name: 'file'
+          type: 'file'
+          required: false
+          description: 'PDF file containing book content'
+        - in: 'formData'
           name: 'content'
-          required: true
-          schema:
-            type: 'object'
-            properties:
-              content:
-                type: 'string'
+          type: 'string'
+          required: false
+          description: 'Raw text content to summarize'
       responses:
         200:
           description: 'Generated summary'
@@ -236,8 +265,6 @@ definitions:
   Review:
     type: 'object'
     properties:
-      id:
-        type: 'integer'
       book_id:
         type: 'integer'
       user_id:
@@ -255,9 +282,3 @@ responses:
     description: 'Resource not found'
   ValidationError:
     description: 'Invalid request parameters'
-
-tags:
-  - name: 'Books'
-    description: 'Operations related to books'
-  - name: 'Reviews'
-    description: 'Operations related to reviews'

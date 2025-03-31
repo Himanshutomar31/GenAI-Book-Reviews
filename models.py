@@ -12,6 +12,7 @@ class Book(db.Model):
     genre = db.Column(db.String(50))
     year_published = db.Column(db.Integer)
     summary = db.Column(db.Text)
+    pdf_file_path = db.Column(db.String(255))
 
     reviews = relationship("Review", backref="book", cascade="all, delete-orphan")
 
@@ -26,6 +27,6 @@ class Review(db.Model):
     __tablename__ = 'reviews'
     id = db.Column(db.Integer, primary_key=True)
     book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False)
-    user_id = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(db.Integer, nullable=True)
     review_text = db.Column(db.Text, nullable=False)
     rating = db.Column(db.Integer, nullable=False)
